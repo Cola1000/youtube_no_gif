@@ -1,0 +1,55 @@
+/* All rules are gated on attributes that content.js sets on <html> from the user's settings. */
+
+/* Media that content.js flagged inside a comment. */
+html[data-ynog-on] [data-ynog="hidden"] {
+  display: none !important;
+}
+
+/* Belt and braces: obvious GIFs are hidden even before the script has scanned them. */
+html[data-ynog-on] :is(ytd-comment-view-model, ytd-comment-renderer, ytm-comment-view-model, ytm-comment-renderer)
+  :is(img[src*=".gif" i], img[src*="giphy." i], img[src*="tenor." i], video[src*="tenor." i]):not([data-ynog="shown"] *, [data-ynog="shown"]) {
+  display: none !important;
+}
+
+/* GIF picker button in the comment / reply composer. */
+html[data-ynog-on][data-ynog-hide-button]
+  :is(ytd-commentbox, ytd-comment-simplebox-renderer, ytm-commentbox, ytm-comment-simplebox-renderer, ytm-comment-dialog-renderer)
+  :is(button, [role="button"], yt-button-shape, ytd-button-renderer, yt-icon-button):is([aria-label*="GIF" i], [title*="GIF" i], :has([aria-label*="GIF" i])) {
+  display: none !important;
+}
+
+/* "GIF hidden" placeholder. */
+.ynog-ph {
+  display: none;
+}
+
+html[data-ynog-on][data-ynog-placeholder] .ynog-ph {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: 1.2rem;
+  line-height: 1.8rem;
+  color: var(--yt-spec-text-secondary, #606060);
+}
+
+.ynog-ph button {
+  all: unset;
+  cursor: pointer;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 500;
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.05));
+}
+
+.ynog-ph button:hover {
+  background: var(--yt-spec-button-chip-background-hover, rgba(0, 0, 0, 0.1));
+}
+
+.ynog-ph button:focus-visible {
+  outline: 2px solid var(--yt-spec-call-to-action, #065fd4);
+  outline-offset: 1px;
+}

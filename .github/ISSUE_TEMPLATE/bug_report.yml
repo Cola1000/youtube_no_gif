@@ -1,0 +1,60 @@
+name: Something isn't hidden / something broke
+description: A GIF slipped through, something was hidden by mistake, or the extension misbehaves.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! YouTube changes its layout often, so the most useful thing you can send is the **page markup** around the problem (instructions below).
+
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What went wrong?
+      options:
+        - A GIF / image in a comment was NOT hidden
+        - Something was hidden that shouldn't be (avatar, emoji, badge…)
+        - The GIF button in the comment box is still visible
+        - Something else
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      description: Filled in automatically when you use "Report a problem" in the extension popup.
+      placeholder: e.g. Firefox 144 (Windows), Chrome 141 (macOS), Firefox 144 (Android)
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: Link to the video, Short or post
+      description: If you can, link a specific comment (click its timestamp, then copy the URL).
+      placeholder: https://www.youtube.com/watch?v=...
+
+  - type: textarea
+    id: markup
+    attributes:
+      label: Comment markup
+      description: |
+        1. Right-click the GIF (or the wrongly hidden item) → **Inspect**.
+        2. In the Elements / Inspector panel, find the enclosing `ytd-comment-view-model` (or `ytm-comment-renderer` on mobile) a few lines up and click it.
+        3. Right-click it → **Copy** → **Copy outerHTML** (Chrome) / **Outer HTML** (Firefox), and paste here.
+      render: html
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else?
+      description: Steps to reproduce, screenshots (drag and drop), what you expected to happen.

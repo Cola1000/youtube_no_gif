@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube No GIF</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <img src="../icons/icon-32.png" alt="" width="20" height="20" />
+      <h1>YouTube No GIF</h1>
+    </header>
+
+    <label class="row">
+      <span>
+        <strong>Hide GIFs in comments</strong>
+        <small>Also hides other images attached to comments.</small>
+      </span>
+      <input type="checkbox" data-key="enabled" />
+    </label>
+
+    <label class="row">
+      <span>
+        <strong>Show "GIF hidden" placeholder</strong>
+        <small>Lets you reveal a single GIF with a click.</small>
+      </span>
+      <input type="checkbox" data-key="placeholder" />
+    </label>
+
+    <label class="row">
+      <span>
+        <strong>Hide the GIF button</strong>
+        <small>Removes the GIF picker from the comment box.</small>
+      </span>
+      <input type="checkbox" data-key="hideGifButton" />
+    </label>
+
+    <footer>
+      <a id="report" href="https://github.com/Cola1000/youtube_no_gif/issues" target="_blank" rel="noopener">Report a problem</a>
+      <span id="version"></span>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
