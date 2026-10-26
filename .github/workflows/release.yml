@@ -1,12 +1,14 @@
 # Publishes a new version to addons.mozilla.org when a version tag (e.g. v1.0.1) is pushed.
 # Needs repository secrets AMO_API_KEY (JWT issuer) and AMO_API_SECRET (JWT secret) from
 # https://addons.mozilla.org/developers/addon/api/key/. The tag must match manifest.json's "version".
+# "Run workflow" on the Actions tab does a dry run: build, lint and credential check, no upload or release.
 
 name: Release
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write # create the GitHub Release
@@ -27,7 +29,7 @@ jobs:
       - name: Check tag matches manifest version
         run: |
           version=$(jq -r .version manifest.json)
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "v$version" != "$GITHUB_REF_NAME" ]; then
             echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $version (expected v$version)."
             exit 1
           fi
@@ -46,9 +48,16 @@ jobs:
       - name: Lint
         run: npx --yes "web-ext@$WEB_EXT_VERSION" lint --source-dir build
 
+      - name: Check AMO credentials
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: node scripts/check-amo-credentials.mjs
+
       # Submits the version for review on the public listing. Doesn't wait for approval:
       # listed versions are distributed by AMO once reviewed.
       - name: Upload to AMO
+        if: github.event_name == 'push'
         env:
           WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
@@ -60,6 +69,7 @@ jobs:
             --approval-timeout 0
 
       - name: Create GitHub Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
