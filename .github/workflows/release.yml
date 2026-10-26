@@ -1,0 +1,68 @@
+# Publishes a new version to addons.mozilla.org when a version tag (e.g. v1.0.1) is pushed.
+# Needs repository secrets AMO_API_KEY (JWT issuer) and AMO_API_SECRET (JWT secret) from
+# https://addons.mozilla.org/developers/addon/api/key/. The tag must match manifest.json's "version".
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the GitHub Release
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  WEB_EXT_VERSION: 8.10.0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check tag matches manifest version
+        run: |
+          version=$(jq -r .version manifest.json)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match manifest.json version $version (expected v$version)."
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      # Same zip as a local build; unpacked so lint and sign check exactly what ships.
+      - name: Package
+        run: |
+          pwsh -NoProfile -File scripts/package.ps1
+          unzip -q "dist/youtube-no-gif-$VERSION.zip" -d build
+
+      - name: Lint
+        run: npx --yes "web-ext@$WEB_EXT_VERSION" lint --source-dir build
+
+      # Submits the version for review on the public listing. Doesn't wait for approval:
+      # listed versions are distributed by AMO once reviewed.
+      - name: Upload to AMO
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: |
+          npx --yes "web-ext@$WEB_EXT_VERSION" sign \
+            --source-dir build \
+            --artifacts-dir web-ext-artifacts \
+            --channel listed \
+            --approval-timeout 0
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/youtube-no-gif-$VERSION.zip" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
